@@ -34,10 +34,9 @@ public class Address {
     @NotBlank(message = "Country is mandatory.")
     private String country;
 
-    @NotNull(message = "Zipcode is mandatory.")
-    @Range(min = 10000L, max = 99999L, message = "Zipcode must be between 10000 and 99999")
-    private Long zipcode;
+    @NotBlank(message = "Zipcode is mandatory.")
+    private String zipcode;
 
-    @OneToOne(mappedBy = "theaterAddress")
-    private Theater theater;
+    @OneToOne(mappedBy = "userAddress")
+    private User user;
 }

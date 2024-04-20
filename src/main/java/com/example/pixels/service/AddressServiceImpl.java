@@ -2,7 +2,6 @@ package com.example.pixels.service;
 
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.model.Address;
-import com.example.pixels.model.Theater;
 import com.example.pixels.repository.AddressRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;

@@ -70,7 +70,7 @@ public class MovieController {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.BAD_REQUEST  )
     public Map<String, String> handleValidationException(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getAllErrors().forEach((error) -> {

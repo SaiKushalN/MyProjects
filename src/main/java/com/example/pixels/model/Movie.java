@@ -37,11 +37,8 @@ public class Movie {
     private Integer movieRuntime;
 
     @Range(min = 0, max = 5, message = "Movie rating must be between 0 and 5.")
-    @Digits(integer = 1, fraction = 1, message = "Movie rating must have single pointer.")
     private Double movieRating;
 
-    private byte[] movieImage;
+    private String movieImageUrl;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Show> shows;
 }
