@@ -17,10 +17,6 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentId;
 
-//    @ManyToOne
-//    @JoinColumn(name = "parent_comment_id")
-//    private Comment parentComment;
-
     @NotBlank(message = "Comment is mandatory")
     private String commentDescription;
 
