@@ -2,7 +2,7 @@ package com.example.pixels.service;
 
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.error.SameDataUpdateExceptionHandler;
-import com.example.pixels.model.Movie;
+import com.example.pixels.entity.Movie;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

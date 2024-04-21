@@ -1,9 +1,10 @@
-package com.example.pixels.service;
+package com.example.pixels.service.impl;
 
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.error.SameDataUpdateExceptionHandler;
-import com.example.pixels.model.Movie;
+import com.example.pixels.entity.Movie;
 import com.example.pixels.repository.MovieRepository;
+import com.example.pixels.service.MovieService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 @Component
 @Transactional
-public class MovieServiceImpl implements MovieService{
+public class MovieServiceImpl implements MovieService {
     @Autowired
     MovieRepository movieRepository;
 
@@ -98,7 +99,6 @@ public class MovieServiceImpl implements MovieService{
         if(movieFromDb.isEmpty())
             throw new ItemNotFoundException("Movie with Id "+movieId+" Not Found");
         Movie movieGetFromDb = movieFromDb.get();
-        movie.setMovieId(movieId);
         if(movieGetFromDb.equals(movie))
             throw new SameDataUpdateExceptionHandler("Same data passed, please update the content.");
         if(Objects.nonNull(movie.getMovieGenre()) &&
@@ -120,8 +120,8 @@ public class MovieServiceImpl implements MovieService{
                 !"".equalsIgnoreCase(String.valueOf(movie.getMovieRating()))) {
             movieGetFromDb.setMovieRating(Double.parseDouble(String.valueOf(movie.getMovieRating())));
         }
-        if (Objects.nonNull(movie.getMovieImage()) && movie.getMovieImage().length > 0) {
-            movieGetFromDb.setMovieImage(movie.getMovieImage());
+        if (movie.getMovieImageUrl() != null && !movie.getMovieImageUrl().isEmpty()) {
+            movieGetFromDb.setMovieImageUrl(movie.getMovieImageUrl());
         }
         return movieRepository.save(movieGetFromDb);
     }

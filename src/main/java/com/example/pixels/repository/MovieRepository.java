@@ -1,6 +1,6 @@
 package com.example.pixels.repository;
 
-import com.example.pixels.model.Movie;
+import com.example.pixels.entity.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,5 +1,6 @@
-package com.example.pixels.model;
+package com.example.pixels.entity;
 
+import com.example.pixels.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long subscriptionId;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)

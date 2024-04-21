@@ -1,7 +1,6 @@
-package com.example.pixels.model;
+package com.example.pixels.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +17,7 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reviewId;
+    private Long id;
 
     @NotNull(message = "Rating points is mandatory.")
     private Double ratingPoints;
@@ -29,7 +28,7 @@ public class Review {
 
     private String childSafety;
 
-    @OneToMany(mappedBy = "review")
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> reviewComments;
 
     @ManyToOne

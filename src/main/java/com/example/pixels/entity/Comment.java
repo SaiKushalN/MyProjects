@@ -1,4 +1,4 @@
-package com.example.pixels.model;
+package com.example.pixels.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long commentId;
+    private Long id;
 
     @NotBlank(message = "Comment is mandatory")
     private String commentDescription;
@@ -27,6 +27,8 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "review_id")
     private Review review;
+
+    private String userName;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

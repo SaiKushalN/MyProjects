@@ -1,7 +1,7 @@
 package com.example.pixels.service;
 
 import com.example.pixels.error.ItemNotFoundException;
-import com.example.pixels.model.Movie;
+import com.example.pixels.entity.Movie;
 import com.example.pixels.repository.MovieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,14 +29,14 @@ class MovieServiceTest {
     @BeforeEach
     void setUp() {
         Movie movie1 = Movie.builder()
-                .movieId(1L)
+                .id(1L)
                 .movieName("Salaar")
                 .movieGenre("Drama")
                 .releaseDate(LocalDate.ofEpochDay(2023-12-20))
                 .movieRating(3.2)
                 .build();
         Movie movie2 = Movie.builder()
-                .movieId(1L)
+                .id(1L)
                 .movieName("Dunki")
                 .movieGenre("Drama")
                 .releaseDate(LocalDate.ofEpochDay(2023-12-20))

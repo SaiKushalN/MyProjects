@@ -2,7 +2,7 @@ package com.example.pixels.controller;
 
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.error.SameDataUpdateExceptionHandler;
-import com.example.pixels.model.Movie;
+import com.example.pixels.entity.Movie;
 import com.example.pixels.service.MovieService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
