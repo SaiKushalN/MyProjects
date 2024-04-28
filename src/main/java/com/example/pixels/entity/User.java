@@ -36,7 +36,7 @@ public class User {
     private String userEmail;
 
     @NotBlank(message = "Password is required.")
-    @Column(length = 20)
+    @Column(length = 60)
     private String password;
 
     private String userRole;
