@@ -1,17 +1,21 @@
 package com.example.pixels.service.impl;
 
-import com.example.pixels.entity.Movie;
-import com.example.pixels.entity.Review;
-import com.example.pixels.entity.User;
+import com.example.pixels.entity.*;
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.model.ReviewModel;
+import com.example.pixels.repository.ReviewDislikeRepository;
+import com.example.pixels.repository.ReviewLikeRepository;
 import com.example.pixels.repository.ReviewRepository;
 import com.example.pixels.service.MovieService;
 import com.example.pixels.service.ReviewService;
+import com.example.pixels.service.UserService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,24 +28,36 @@ public class ReviewServiceImpl implements ReviewService {
     ReviewRepository reviewRepository;
 
     @Autowired
+    ReviewLikeRepository reviewLikeRepository;
+
+    @Autowired
+    ReviewDislikeRepository reviewDislikeRepository;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
     MovieService movieService;
     @Override
-    public Review addReview(Movie movie, ReviewModel reviewModel, User user) throws ItemNotFoundException {
+    public Review addReview(Movie movie, ReviewModel reviewModel, User user) {
 
         Review review = new Review();
         review.setRatingPoints(reviewModel.getRatingPoints());
         review.setReviewDescription(reviewModel.getReviewDescription());
         review.setSuggest(reviewModel.getSuggest());
         review.setChildSafety(reviewModel.getChildSafety());
+        review.setUserName(user.getUserEmail());
         review.setUser(user);
         review.setMovie(movie);
+        review.setUserName(user.getFirstName()+" "+user.getLastName());
 
-        if (reviewRepository.existsByUserIdAndMovieId(user.getId(), movie.getId())) {
+        if (reviewRepository.existsByUserNameAndMovieId(user.getUserEmail(), movie.getId())) {
             throw new IllegalStateException("A review from this user for this movie already exists.");
         }
         else {
+            reviewRepository.save(review);
             sumOfRatings(movie.getId());
-            return reviewRepository.save(review);
+            return review;
         }
     }
 
@@ -60,7 +76,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Transactional
-    public void sumOfRatings(Long movieId) throws ItemNotFoundException {
+    public void sumOfRatings(Long movieId) {
         List<Review> reviews = reviewRepository.findAllByMovieId(movieId);
         Movie movie = movieService.getMovieById(movieId);
         OptionalDouble averageRating = reviews.stream()
@@ -73,118 +89,90 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional
     public Review likeReview(Long reviewId, User user) {
         Review review = getReviewById(reviewId);
-//        review.setLikesCount(review.getLikesCount()+1);
+        Optional<ReviewLike> reviewLikePrevious =
+                reviewLikeRepository.findByUserNameAndReviewId(user.getUserEmail(), reviewId);
 
-        if (review.getDislikedByUsers().contains(user)) {
-            review.getDislikedByUsers().remove(user);
-            review.setDislikesCount(review.getDislikesCount() - 1);
+        Optional<ReviewDislike> reviewDislikePrevious =
+                reviewDislikeRepository.findByUserNameAndReviewId(user.getUserEmail(), reviewId);
+
+        if(reviewDislikePrevious.isPresent()){
+            reviewDislikeRepository.delete(reviewDislikePrevious.get());
+            review.decrementDislikesCount();
+
         }
 
-        boolean added = review.getLikedByUsers().add(user);
-        if (added) {
-            review.setLikesCount(review.getLikesCount() + 1);
+        if(reviewLikePrevious.isEmpty()) {
+            ReviewLike reviewLike = new ReviewLike();
+            reviewLike.setUserName(user.getUserEmail());
+            reviewLike.setReview(review);
+            reviewLikeRepository.save(reviewLike);
+            review.incrementLikesCount();
+            return reviewRepository.save(review);
         }
-        return reviewRepository.save(review);
+
+        return review;
     }
 
     @Override
+    @Transactional
     public Review dislikeReview(Long reviewId, User user) {
         Review review = getReviewById(reviewId);
-//        review.setDislikesCount(review.getDislikesCount()+1);
+        Optional<ReviewDislike> reviewDislikePrevious =
+                reviewDislikeRepository.findByUserNameAndReviewId(user.getUserEmail(), reviewId);
 
-        if (review.getLikedByUsers().contains(user)) {
-            review.getLikedByUsers().remove(user);
-            review.setLikesCount(review.getLikesCount() - 1);
+        Optional<ReviewLike> reviewLikePrevious =
+                reviewLikeRepository.findByUserNameAndReviewId(user.getUserEmail(), reviewId);
+
+        if(reviewLikePrevious.isPresent()){
+            reviewLikeRepository.delete(reviewLikePrevious.get());
+            review.decrementLikesCount();
         }
 
-        boolean added = review.getDislikedByUsers().add(user);
-        if (added) {
-            review.setDislikesCount(review.getDislikesCount() + 1);
+        if(reviewDislikePrevious.isEmpty()) {
+            ReviewDislike reviewDislike = new ReviewDislike();
+            reviewDislike.setUserName(user.getUserEmail());
+            reviewDislike.setReview(review);
+            reviewDislikeRepository.save(reviewDislike);
+            review.incrementDislikesCount();
+            return reviewRepository.save(review);
         }
 
-        return reviewRepository.save(review);
+        return review;
     }
 
     @Override
     public String deleteReviewById(Long reviewId) {
         Review review = getReviewById(reviewId);
         reviewRepository.delete(review);
+        sumOfRatings(review.getMovie().getId());
         return "Review deleted successfully";
     }
 
     @Override
-    public Review editReview(Long reviewId, ReviewModel reviewModel) throws ItemNotFoundException {
+    public Review editReview(Long reviewId, ReviewModel reviewModel) {
         Review review = getReviewById(reviewId);
+        UserDetails userDetails = userService.getLoggedInUserDetails();
+        if(!(review.getUserName()).equals(userDetails.getUsername()))
+            throw new ForbiddenException("Cannot edit other user review.");
+//        if(!(review.getReviewComments().isEmpty() && review.getLikesCount()==0 && review.getDislikesCount()==0))
         review.setRatingPoints(reviewModel.getRatingPoints());
         review.setReviewDescription(reviewModel.getReviewDescription());
         review.setSuggest(reviewModel.getSuggest());
         review.setChildSafety(reviewModel.getChildSafety());
         Long movieId = review.getMovie().getId();
-        sumOfRatings(movieId);
         reviewRepository.save(review);
+        sumOfRatings(movieId);
         return review;
     }
 
+    @Override
+    public List<Review> myReviews(User user) {
+        Optional<List<Review>> reviews = reviewRepository.findAllByUserName(user.getUserEmail());
+        if(reviews.isEmpty())
+            throw new NoSuchElementException("You have no Reviews");
+        return reviews.get();
+    }
 }
-
-
-
-
-//    how can I do this in entity level?
-//
-//        ALTER TABLE reviews
-//        ADD CONSTRAINT unique_user_movie_review UNIQUE (user_id, movie_id);
-//
-//
-//        package com.example.pixels.entity;
-//
-//        import jakarta.persistence.*;
-//        import jakarta.validation.constraints.NotNull;
-//        import lombok.AllArgsConstructor;
-//        import lombok.Builder;
-//        import lombok.Data;
-//        import lombok.NoArgsConstructor;
-//        import java.util.List;
-//        import com.fasterxml.jackson.annotation.*;
-//
-//
-//@AllArgsConstructor
-//@NoArgsConstructor
-//@Builder
-//@Data
-//@Entity
-//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
-//public class Review {
-//
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
-//
-//    @NotNull(message = "Rating points is mandatory.")
-//    private Double ratingPoints;
-//
-//    private String reviewDescription;
-//
-//    private Boolean suggest;
-//
-//    private String childSafety;
-//
-////    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-////    private List<Comment> reviewComments;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-//
-//    private Long likesCount=0L;
-//
-//    private Long dislikesCount=0L;
-//
-//    @ManyToOne
-//    @JoinColumn(name = "movie_id")
-//    private Movie movie;
-//}
-
-

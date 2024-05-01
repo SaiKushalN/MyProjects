@@ -1,5 +1,8 @@
 package com.example.pixels.entity;
 
+import com.example.pixels.dto.IdOnlySerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,11 +40,13 @@ public class User {
 
     @NotBlank(message = "Password is required.")
     @Column(length = 60)
+    @JsonIgnore
     private String password;
+
+    private String fullName = firstName+" "+lastName;
 
     private String userRole;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private String subscription = "Free";
 
     private LocalDate subStartDate = null;
@@ -50,10 +55,12 @@ public class User {
 
     private boolean userVerified = false;
 
-//    @OneToMany(mappedBy = "reviewUser")
-//    private List<Review> userReviews;
-//
-//    @OneToMany(mappedBy = "user")
-//    private List<Comment> userComments;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonSerialize(contentUsing = IdOnlySerializer.class)
+    private List<Review> userReviews;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonSerialize(contentUsing = IdOnlySerializer.class)
+    private List<Comment> userComments;
 }
 

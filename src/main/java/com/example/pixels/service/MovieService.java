@@ -13,17 +13,17 @@ import java.util.List;
 
 @Service
 public interface MovieService {
-    public List<Movie> getAllMovies() throws ItemNotFoundException;
+    public List<Movie> getAllMovies();
 
-    public Movie getMovieById(Long movieId) throws ItemNotFoundException;
+    public Movie getMovieById(Long movieId);
 
-    public Movie getMovieByName(String movieName) throws ItemNotFoundException;
+    public Movie getMovieByName(String movieName);
 
-    public List<Movie> getMoviesByGenre(String movieGenre) throws ItemNotFoundException;
+    public List<Movie> getMoviesByGenre(String movieGenre);
 
-    public List<Movie> getMoviesByReleaseDate(LocalDate releaseDate) throws ItemNotFoundException;
+    public List<Movie> getMoviesByReleaseDate(LocalDate releaseDate);
 
-    public List<Movie> getMoviesByMovieRating(Double movieRating) throws ItemNotFoundException;
+    public List<Movie> getMoviesByMovieRating(Double movieRating);
 
     public Movie saveMovie(MovieModel movieModel);
 
@@ -31,7 +31,7 @@ public interface MovieService {
 
     public List<Movie> saveAllMovie(List<Movie> movies);
 
-    public Movie updateMovie(MovieModel movieModel, Long movieId) throws ItemNotFoundException, SameDataUpdateExceptionHandler;
+    public Movie updateMovie(MovieModel movieModel, Long movieId);
 
-    public void deleteMovieById(Long movieId) throws ItemNotFoundException;
+    public void deleteMovieById(Long movieId);
 }

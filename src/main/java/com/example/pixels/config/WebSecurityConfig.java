@@ -29,14 +29,14 @@ public class WebSecurityConfig {
     UserServiceImpl userService;
 
     private static final String[] WHITE_LIST_URLS = {
-//            "/user/**",
             "/register",
-            "/movies/**",
             "/verifyRegistration*",
             "/resendVerifyToken*",
             "/resetPassword*",
             "/savePassword",
-//            "/review/**"
+            "/movies/**",
+            "/review/**",
+            "/comment/**"
     };
 
     @Bean
@@ -48,13 +48,32 @@ public class WebSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .clearAuthentication(true)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers(WHITE_LIST_URLS).permitAll()
                         .anyRequest().authenticated())
+                .formLogin(formLogin -> formLogin
+//                        .loginPage("/login")  // Specify the login page
+                        .defaultSuccessUrl("/movies/all", true)  // Redirect to home on login success
+                        .permitAll())
 //                .formLogin(Customizer.withDefaults());
+//                .formLogin(formLogin -> formLogin
+//                        .loginPage("/login")
+//                        .loginProcessingUrl("/perform_login")
+//                        .defaultSuccessUrl("/default", true)
+//                        .failureUrl("/login?error=true")
+//                        .successHandler(new CustomLoginSuccessHandler())  // Set the custom success handler
+//                        .permitAll());
                 .formLogin(AbstractAuthenticationFilterConfigurer::permitAll);
+
         return http.build();
     }
 

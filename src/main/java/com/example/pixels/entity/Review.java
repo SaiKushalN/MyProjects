@@ -1,7 +1,7 @@
 package com.example.pixels.entity;
 
-
 import com.example.pixels.dto.IdOnlySerializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,11 +10,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import com.fasterxml.jackson.annotation.*;
+
+
 
 
 @AllArgsConstructor
@@ -38,38 +37,52 @@ public class Review {
 
     private String childSafety;
 
-//    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Comment> reviewComments;
+    private String userName;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    private Long likesCount = 0L;
+
+    private Long dislikesCount = 0L;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonSerialize(contentUsing = IdOnlySerializer.class)
+    private List<Comment> reviewComments;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = true)
     @JsonSerialize(using = IdOnlySerializer.class)
     private User user;
 
-    private Long likesCount=0L;
-
-    private Long dislikesCount=0L;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id")
     @JsonSerialize(using = IdOnlySerializer.class)
     private Movie movie;
 
-    @ManyToMany
-    @JoinTable(
-            name = "review_likes",
-            joinColumns = @JoinColumn(name = "review_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonSerialize(contentUsing = IdOnlySerializer.class)
-    private Set<User> likedByUsers = new HashSet<>();
+    private List<ReviewLike> reviewLikes;
 
-    @ManyToMany
-    @JoinTable(
-            name = "review_dislikes",
-            joinColumns = @JoinColumn(name = "review_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonSerialize(contentUsing = IdOnlySerializer.class)
-    private Set<User> dislikedByUsers = new HashSet<>();
+    private List<ReviewDislike> reviewDisLikes;
+
+    public void incrementLikesCount() {
+        this.likesCount += 1;
+    }
+
+    public void decrementLikesCount() {
+        if (this.likesCount > 0) {
+            this.likesCount -= 1;
+        }
+    }
+
+    public void incrementDislikesCount() {
+        this.dislikesCount += 1;
+    }
+
+    public void decrementDislikesCount() {
+        if (this.dislikesCount > 0) {
+            this.dislikesCount -= 1;
+        }
+    }
+
 }

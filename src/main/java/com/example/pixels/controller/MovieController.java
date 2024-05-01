@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/movies")
+//@RequestMapping("/movies")
 public class MovieController {
 
     @Autowired
@@ -33,60 +33,44 @@ public class MovieController {
 
     private final Logger LOGGER= LoggerFactory.getLogger(MovieController.class);
 
-    @GetMapping("/all")
-    public List<Movie> getMovies() throws ItemNotFoundException {
+    @GetMapping("/movies/all")
+    public List<Movie> getMovies() {
         return movieService.getAllMovies();
     }
 
-    @GetMapping("/movieName/{movieName}")
-    public Movie getMovieByName(@PathVariable("movieName") String movieName) throws ItemNotFoundException {return movieService.getMovieByName(movieName);}
+    @GetMapping("/movies/movieName/{movieName}")
+    public Movie getMovieByName(@PathVariable("movieName") String movieName) {return movieService.getMovieByName(movieName);}
 
-    @GetMapping("/movieGenre/{movieGenre}")
-    public List<Movie> getMoviesByGenre(@PathVariable("movieGenre") String movieGenre) throws ItemNotFoundException {return movieService.getMoviesByGenre(movieGenre);}
+    @GetMapping("/movies/movieGenre/{movieGenre}")
+    public List<Movie> getMoviesByGenre(@PathVariable("movieGenre") String movieGenre) {return movieService.getMoviesByGenre(movieGenre);}
 
-    @GetMapping("/releaseDate/{releaseDate}")
-    public List<Movie> getMoviesByReleaseDate(@PathVariable("releaseDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate releaseDate) throws ItemNotFoundException {return movieService.getMoviesByReleaseDate(releaseDate);}
+    @GetMapping("/movies/releaseDate/{releaseDate}")
+    public List<Movie> getMoviesByReleaseDate(@PathVariable("releaseDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate releaseDate) {return movieService.getMoviesByReleaseDate(releaseDate);}
 
-    @GetMapping("/movieRating/{movieRating}")
-    public List<Movie> getMoviesByMovieRating(@PathVariable("movieRating") Double movieRating) throws ItemNotFoundException {return movieService.getMoviesByMovieRating(movieRating);}
+    @GetMapping("/movies/movieRating/{movieRating}")
+    public List<Movie> getMoviesByMovieRating(@PathVariable("movieRating") Double movieRating) {return movieService.getMoviesByMovieRating(movieRating);}
 
-//    @PostMapping("/addMovie")
-//    public ResponseEntity<Object> saveMovie(@Valid @RequestBody Movie movie) {
-//        LOGGER.info("New Movie Added.");
-//        return ResponseEntity.ok(movieService.saveMovie(movie));
-//    }
-
-    @PostMapping("/addMovie")
+    //ERROR
+    @PostMapping("/admin/addMovie")
     public ResponseEntity<Object> saveMovie(@Valid @RequestBody MovieModel movieModel) {
         LOGGER.info("New Movie Added.");
         return ResponseEntity.ok(movieService.saveMovie(movieModel));
     }
 
-//    @PostMapping("/addListOfMovies")
-//    public List<Movie> saveAllMovie(@RequestBody List<Movie> movies) {
-//        return movieService.saveAllMovie(movies);
-//    }
-
-//    @PutMapping("/updateMovie/{movieId}")
-//    public Movie updateMovie(@RequestBody Movie movie,
-//                             @PathVariable("movieId") Long movieId) throws ItemNotFoundException, SameDataUpdateExceptionHandler {
-//        return movieService.updateMovie(movie, movieId);
-//    }
-
-    @PutMapping("/updateMovie/{movieId}")
-    public Movie updateMovie(@RequestBody MovieModel movieModel,
-                             @PathVariable("movieId") Long movieId) throws ItemNotFoundException, SameDataUpdateExceptionHandler {
+    @PutMapping("/admin/updateMovie/{movieId}")
+    public Movie updateMovie(@Valid @RequestBody MovieModel movieModel,
+                             @PathVariable("movieId") Long movieId) {
         return movieService.updateMovie(movieModel, movieId);
     }
 
-    @DeleteMapping("/deleteMovie/{movieId}")
-    public String deleteMovieById(@PathVariable("movieId") Long movieId) throws ItemNotFoundException {
+    @DeleteMapping("/admin/deleteMovie/{movieId}")
+    public String deleteMovieById(@PathVariable("movieId") Long movieId) {
         movieService.deleteMovieById(movieId);
         return "Movie deleted successfully.";
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST  )
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationException(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getAllErrors().forEach((error) -> {

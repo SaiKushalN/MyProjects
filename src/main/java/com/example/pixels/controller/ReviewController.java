@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/review")
+//@RequestMapping("/review")
 public class ReviewController {
 
     @Autowired
@@ -31,7 +31,7 @@ public class ReviewController {
     @Autowired
     ReviewService reviewService;
 
-    @PostMapping("/user/{movieId}/addReview")
+    @PostMapping("/user/review/{movieId}/addReview")
 //    @PreAuthorize("hasRole('USER')")
     public Review addReview(@Valid @PathVariable("movieId") Long movieId,
                             @RequestBody ReviewModel reviewModel) throws ItemNotFoundException {
@@ -43,13 +43,13 @@ public class ReviewController {
         return reviewService.addReview(movie, reviewModel, user);
     }
 
-    @PostMapping("/user/{reviewId}/like")
+    @PostMapping("/user/review/{reviewId}/like")
     public Review likeReview(@PathVariable("reviewId") Long reviewId){
         User user = userService.getUserByEmail(userService.getLoggedInUserDetails().getUsername());
         return reviewService.likeReview(reviewId, user);
     }
 
-    @PostMapping("/user/{reviewId}/dislike")
+    @PostMapping("/user/review/{reviewId}/dislike")
     public Review dislikeReview(@PathVariable("reviewId") Long reviewId){
         User user = userService.getUserByEmail(userService.getLoggedInUserDetails().getUsername());
         return reviewService.dislikeReview(reviewId, user);
@@ -58,17 +58,26 @@ public class ReviewController {
 //    @GetMapping("/byUserName/{userName}")
 //    public List<Review> getReviewsByUserName(@PathVariable("userName") String userName)
 
-    @GetMapping("/{movieId}/getReviews")
+    @GetMapping("/user/myReviews")
+    public List<Review> myReviews(){
+        User user = userService.getUserByEmail(userService.getLoggedInUserDetails().getUsername());
+        return reviewService.myReviews(user);
+    }
+
+    @GetMapping("/review/{movieId}/getReviews")
     public List<Review> getReviews(@PathVariable("movieId") Long movieId) {
         return reviewService.getReviews(movieId);
     }
 
-    @GetMapping("/{reviewId}")
+    @GetMapping("/review/{reviewId}")
     public Review getReviewById(@PathVariable("reviewId") Long reviewId){
         return reviewService.getReviewById(reviewId);
     }
 
-    @PutMapping("/{reviewId}")
+
+
+    //Implement cannot edit review after a minute
+    @PutMapping("/user/review/{reviewId}")
     public Review editReview(@Valid @PathVariable("reviewId") Long reviewId, @RequestBody ReviewModel reviewModel) throws ItemNotFoundException {
         return reviewService.editReview(reviewId, reviewModel);
     }
@@ -79,7 +88,4 @@ public class ReviewController {
 //        return reviewService.deleteReviewById(reviewId);
 //    }
 
-    public String getCurrentUserEmailUsingPrincipal(Principal principal) {
-        return principal.getName(); // `getName()` will return the username (typically the email in your case).
-    }
 }

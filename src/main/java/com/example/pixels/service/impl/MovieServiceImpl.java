@@ -6,16 +6,16 @@ import com.example.pixels.entity.Movie;
 import com.example.pixels.model.MovieModel;
 import com.example.pixels.repository.MovieRepository;
 import com.example.pixels.service.MovieService;
+import com.example.pixels.service.ReviewService;
+import com.example.pixels.service.UserService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Transactional
@@ -25,69 +25,70 @@ public class MovieServiceImpl implements MovieService {
 
     //TestWritten
     @Override
-    public List<Movie> getAllMovies() throws ItemNotFoundException {
+    public List<Movie> getAllMovies() {
         Optional<List<Movie>> movies = Optional.of(movieRepository.findAll());
         if(movies.get().isEmpty()){
-            throw new ItemNotFoundException("No Movies Available.");
+            throw new NoSuchElementException("No Movies Available.");
         }
+//        movies.get().forEach(movie -> {reviewService.sumOfRatings(movie.getId());});
         return movies.get();
     }
 
     @Override
-    public Movie getMovieById(Long movieId) throws ItemNotFoundException {
+    public Movie getMovieById(Long movieId) {
         Optional<Movie> movie = movieRepository.findById(movieId);
         if(movie.isEmpty()){
-            throw new ItemNotFoundException("No Movies Available.");
+            throw new NoSuchElementException("No Movies Available.");
         }
         return movie.get();
     }
 
     //TestWritten
     @Override
-    public Movie getMovieByName(String movieName)
-            throws ItemNotFoundException {
+    public Movie getMovieByName(String movieName) {
         Optional<Movie> movie = Optional.ofNullable(movieRepository.findByMovieNameIgnoreCase(movieName));
 
         if(movie.isEmpty()){
-            throw new ItemNotFoundException("Movie Not Available.");
+            throw new NoSuchElementException("Movie with name "+ movieName+" Not Available.");
         }
         return movie.get();
     }
 
     //TestWritten
     @Override
-    public List<Movie> getMoviesByGenre(String movieGenre) throws ItemNotFoundException {
+    public List<Movie> getMoviesByGenre(String movieGenre) {
         Optional<List<Movie>> movies = Optional.of(movieRepository.findAllByMovieGenreIgnoreCaseOrderByMovieName(movieGenre));
         if(movies.get().isEmpty()){
-            throw new ItemNotFoundException("No Movies Available.");
+            throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
     }
 
     //TestWritten
     @Override
-    public List<Movie> getMoviesByReleaseDate(LocalDate releaseDate) throws ItemNotFoundException {
+    public List<Movie> getMoviesByReleaseDate(LocalDate releaseDate) {
         Optional<List<Movie>> movies = Optional.of(movieRepository.findAllByReleaseDateOrderByMovieName(releaseDate));
         if(movies.get().isEmpty()){
-            throw new ItemNotFoundException("No Movies Available.");
+            throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
     }
 
     //TestWritten
     @Override
-    public List<Movie> getMoviesByMovieRating(Double movieRating) throws ItemNotFoundException {
+    public List<Movie> getMoviesByMovieRating(Double movieRating) {
         int lowerRating = movieRating.intValue();
         int upperRating = lowerRating + 1;
         Optional<List<Movie>> movies = Optional.of(movieRepository.findByMovieRatingBetweenOrderByMovieName(lowerRating, upperRating));
         if(movies.get().isEmpty()){
-            throw new ItemNotFoundException("No Movies Available.");
+            throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
     }
 
     @Override
     public Movie saveMovie(MovieModel movieModel)  {
+
         Movie movie = new Movie();
         movie.setMovieName(movieModel.getMovieName());
         movie.setMovieGenre(movieModel.getMovieGenre());
@@ -108,14 +109,14 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Movie updateMovie(MovieModel movieModel, Long movieId) throws ItemNotFoundException, SameDataUpdateExceptionHandler {
+    public Movie updateMovie(MovieModel movieModel, Long movieId) {
         Optional<Movie> movieFromDb = movieRepository.findById(movieId);
 
         if(movieFromDb.isEmpty())
-            throw new ItemNotFoundException("Movie with Id "+movieId+" Not Found");
+            throw new NoSuchElementException("Movie with Id "+movieId+" Not Found");
+
         Movie movieGetFromDb = movieFromDb.get();
-//        if(movieGetFromDb.equals(movie))
-//            throw new SameDataUpdateExceptionHandler("Same data passed, please update the content.");
+
         if(Objects.nonNull(movieModel.getMovieGenre()) &&
                 !"".equalsIgnoreCase(movieModel.getMovieGenre())) {
             movieGetFromDb.setMovieGenre(movieModel.getMovieGenre());
@@ -131,10 +132,6 @@ public class MovieServiceImpl implements MovieService {
                 !"".equalsIgnoreCase(String.valueOf(movieModel.getReleaseDate()))) {
             movieGetFromDb.setReleaseDate(movieModel.getReleaseDate());
         }
-//        if(Objects.nonNull(movieModel.getMovieRating()) &&
-//                !"".equalsIgnoreCase(String.valueOf(movieModel.getMovieRating()))) {
-//            movieGetFromDb.setMovieRating(Double.parseDouble(String.valueOf(movie.getMovieRating())));
-//        }
         if (movieModel.getMovieImageUrl() != null && !movieModel.getMovieImageUrl().isEmpty()) {
             movieGetFromDb.setMovieImageUrl(movieModel.getMovieImageUrl());
         }
@@ -142,10 +139,10 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public void deleteMovieById(Long movieId) throws ItemNotFoundException {
+    public void deleteMovieById(Long movieId) {
         Optional<Movie> movieFromDb = movieRepository.findById(movieId);
         if(movieFromDb.isEmpty())
-            throw new ItemNotFoundException("Movie with Id "+movieId+" Not Found.");
+            throw new NoSuchElementException("No Movies Available.");
 
         movieRepository.deleteById(movieId);
     }

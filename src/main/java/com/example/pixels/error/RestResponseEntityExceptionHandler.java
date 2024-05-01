@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class RestResponseEntityExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Map<String, String>> handleInternalServerException(HttpServerErrorException.InternalServerError exception) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("Server Error: ", exception.getMessage());
+        errors.put("Server Error", exception.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 
@@ -98,7 +99,15 @@ public class RestResponseEntityExceptionHandler
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<Map<String, String>> handleForbiddenExceptionException(ForbiddenException exception) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("Forbidden: ",exception.getMessage());
+        errors.put("Forbidden",exception.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
+    }
+
+    @ExceptionHandler(IllegalAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<Map<String, String>> handleIllegalAccessError(IllegalAccessException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("Forbidden",exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 

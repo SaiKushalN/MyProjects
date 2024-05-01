@@ -13,13 +13,13 @@ import java.util.Optional;
 
 @Service
 public interface ReviewService {
-    Review addReview(Movie movie, ReviewModel reviewModel, User user) throws ItemNotFoundException;
+    Review addReview(Movie movie, ReviewModel reviewModel, User user);
 
     Review getReviewById(Long reviewId);
 
     List<Review> getReviews(Long movieId);
 
-    void sumOfRatings(Long movieId) throws ItemNotFoundException;
+    void sumOfRatings(Long movieId);
 
     Review likeReview(Long reviewId, User user);
 
@@ -27,5 +27,7 @@ public interface ReviewService {
 
     String deleteReviewById(Long reviewId);
 
-    Review editReview(Long reviewId, ReviewModel reviewModel) throws ItemNotFoundException;
+    Review editReview(Long reviewId, ReviewModel reviewModel);
+
+    List<Review> myReviews(User user);
 }

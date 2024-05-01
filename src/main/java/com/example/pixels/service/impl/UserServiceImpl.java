@@ -1,7 +1,7 @@
 package com.example.pixels.service.impl;
 
+import com.example.pixels.config.EmailService;
 import com.example.pixels.entity.PasswordResetToken;
-import com.example.pixels.entity.Review;
 import com.example.pixels.entity.User;
 import com.example.pixels.entity.VerificationToken;
 import com.example.pixels.model.UserModel;
@@ -10,18 +10,13 @@ import com.example.pixels.repository.UserRepository;
 import com.example.pixels.repository.VerificationTokenRepository;
 import com.example.pixels.service.UserService;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.NoSuchElementException;
@@ -35,6 +30,9 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Autowired
@@ -43,11 +41,14 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public User registerUser(UserModel userModel) {
+    public User registerUser(UserModel userModel) throws IllegalAccessException {
+        if(getLoggedInUserDetails() != null)
+            throw new IllegalAccessException("Please logout to register.");
         User user = new User();
         user.setUserEmail(userModel.getUserEmail());
         user.setFirstName(userModel.getFirstName());
         user.setLastName(userModel.getLastName());
+        user.setFullName(userModel.getFirstName() +" "+ userModel.getLastName());
         user.setUserRole("USER");
         user.setPassword(passwordEncoder.encode(userModel.getPassword()));
 //        user.setPassword(userModel.getPassword());
@@ -77,6 +78,7 @@ public class UserServiceImpl implements UserService {
         }
         user.setUserVerified(true);
         userRepository.save(user);
+        verificationTokenRepository.delete(verificationToken);
         return "valid";
     }
 
@@ -165,12 +167,21 @@ public class UserServiceImpl implements UserService {
         LocalDate endDate = LocalDate.now().plusMonths(months);
         user.setSubEndDate(endDate);
         userRepository.save(user);
+        emailService.sendSimpleMessage(user.getUserEmail(), "Hello Premium Member..!","You are a Premium member now. Thank you for choosing Premium subscription. Your membership will expire on "+endDate+".");
         return "You are a Premium member now. Thank you for choosing Premium subscription. Your membership will expire on "+endDate+".";
     }
 
     @Override
     public String deleteUserById(Long userId) {
         User user = getUserById(userId);
+
+
+//        user..forEach(comment -> comment.getLikedByUsers().remove(user));
+//        user.getDislikedComments().forEach(comment -> comment.getDislikedByUsers().remove(user));
+//
+//        user.getLikedComments().forEach(commentRepository::save);
+//        user.getDislikedComments().forEach(commentRepository::save);
+
         userRepository.delete(user);
         return "User deleted successfully.";
     }

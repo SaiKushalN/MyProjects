@@ -1,7 +1,9 @@
 package com.example.pixels.entity;
 
+import com.example.pixels.dto.IdOnlySerializer;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +12,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
+import com.fasterxml.jackson.databind.JsonSerializer;
+
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -43,5 +47,7 @@ public class Movie {
     private String movieImageUrl;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonSerialize(contentUsing = IdOnlySerializer.class)
     private List<Review> reviews;
+
 }

@@ -1,9 +1,4 @@
 spring:
-#  security:
-#    user:
-#      name: sai
-#      password: 1234
-#      roles: ADMIN
   datasource:
     username: postgres
     url: jdbc:postgresql://localhost:5432/pixelsReview

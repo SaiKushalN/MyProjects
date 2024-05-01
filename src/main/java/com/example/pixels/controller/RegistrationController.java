@@ -9,6 +9,7 @@ import com.example.pixels.service.UserService;
 import io.micrometer.core.instrument.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class RegistrationController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody UserModel userModel, final HttpServletRequest request){
+    public String registerUser(@Valid @RequestBody UserModel userModel, final HttpServletRequest request) throws IllegalAccessException {
         if(! userModel.getPassword().equals(userModel.getMatchingPassword()))
             return "Password not matched.";
         User user = userService.registerUser(userModel);
@@ -61,14 +62,14 @@ public class RegistrationController {
         return "Success";
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<Object> editUser(@PathVariable("userId") Long userId, @RequestBody UserModel userModel){
+    @PutMapping("/user/{userId}")
+    public ResponseEntity<Object> editUser(@Valid @PathVariable("userId") Long userId, @RequestBody UserModel userModel){
         if(! userModel.getPassword().equals(userModel.getMatchingPassword()))
             return new ResponseEntity<>("Password not matched.", HttpStatus.NOT_ACCEPTABLE);
         return new ResponseEntity<>(userService.editUser(userId, userModel), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/user/{userId}")
     public String deleteUserById(@PathVariable("userId") Long userId){
         return userService.deleteUserById(userId);
     }

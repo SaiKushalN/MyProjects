@@ -9,7 +9,7 @@ import java.security.Principal;
 import java.util.Optional;
 
 public interface UserService {
-    User registerUser(UserModel userModel);
+    User registerUser(UserModel userModel) throws IllegalAccessException;
 
     void saveVerificationTokenForUser(String token, User user);
 
