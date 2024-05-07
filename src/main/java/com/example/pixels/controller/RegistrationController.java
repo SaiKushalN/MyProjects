@@ -29,6 +29,7 @@ import java.util.zip.DataFormatException;
 @RestController
 public class RegistrationController {
 
+
     @Autowired
     private UserService userService;
 
