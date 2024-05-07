@@ -1,5 +1,6 @@
 package com.example.pixels.config;
 
+import com.example.pixels.entity.User;
 import com.example.pixels.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +12,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +23,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -36,7 +40,8 @@ public class WebSecurityConfig {
             "/savePassword",
             "/movies/**",
             "/review/**",
-            "/comment/**"
+            "/comment/**",
+            "/allCritic*"
     };
 
     @Bean
@@ -89,5 +94,22 @@ public class WebSecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+
+//    public void clearCurrentSecurityContext() {
+//        SecurityContextHolder.clearContext();
+//    }
+
+//    public void reAuthenticateUser(OurUserInfoDetailsService user) {
+//        List<SimpleGrantedAuthority> updatedAuthorities = user.
+//
+//                getUserRole().stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.g()))
+//                .collect(Collectors.toList());
+//
+//        UsernamePasswordAuthenticationToken newAuth = new UsernamePasswordAuthenticationToken(
+//                user.getUsername(), user.getPassword(), updatedAuthorities);
+//
+//        SecurityContextHolder.getContext().setAuthentication(newAuth);
+//    }
 
 }

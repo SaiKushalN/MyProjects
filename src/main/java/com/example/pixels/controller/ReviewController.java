@@ -1,11 +1,12 @@
 package com.example.pixels.controller;
 
+import com.example.pixels.dto.ReviewDTO;
 import com.example.pixels.entity.Movie;
 import com.example.pixels.entity.Review;
+import com.example.pixels.entity.ReviewAlert;
 import com.example.pixels.entity.User;
 import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.model.ReviewModel;
-import com.example.pixels.service.MovieService;
 import com.example.pixels.service.ReviewService;
 import com.example.pixels.service.UserService;
 import jakarta.validation.Valid;
@@ -23,24 +24,30 @@ import java.util.Optional;
 public class ReviewController {
 
     @Autowired
-    MovieService movieService;
-
-    @Autowired
     UserService userService;
 
     @Autowired
     ReviewService reviewService;
 
+    //    @PreAuthorize("hasRole('USER')")
+
     @PostMapping("/user/review/{movieId}/addReview")
-//    @PreAuthorize("hasRole('USER')")
-    public Review addReview(@Valid @PathVariable("movieId") Long movieId,
-                            @RequestBody ReviewModel reviewModel) throws ItemNotFoundException {
-        Movie movie =  movieService.getMovieById(movieId);
+    public Review addReview(@PathVariable("movieId") Long movieId,
+                               @RequestBody ReviewModel reviewModel) throws ItemNotFoundException {
+
         UserDetails userDetails = userService.getLoggedInUserDetails();
 
         User user = userService.getUserByEmail(userDetails.getUsername());
 
-        return reviewService.addReview(movie, reviewModel, user);
+//        ReviewDTO reviewDTO = new ReviewDTO();
+//        reviewDTO.setReview(reviewService.addReview(movieId, reviewModel, user));
+//        if ((user.getPremiumUser() != null)) {
+//            reviewDTO.setPremiumUser("PREMIUM USER");
+//        } else {
+//            reviewDTO.setPremiumUser("");
+//        }
+//        return reviewDTO;
+        return reviewService.addReview(movieId, reviewModel, user);
     }
 
     @PostMapping("/user/review/{reviewId}/like")
@@ -66,7 +73,15 @@ public class ReviewController {
 
     @GetMapping("/review/{movieId}/getReviews")
     public List<Review> getReviews(@PathVariable("movieId") Long movieId) {
-        return reviewService.getReviews(movieId);
+        List<Review> reviews = reviewService.getReviews(movieId);
+        for(Review review:reviews){
+            if(review.getUser()!=null) {
+                if (review.getUser().getPremiumUser() != null) {
+                    review.setSaveName(review.getSaveName().toUpperCase());
+                }
+            }
+        }
+        return reviews;
     }
 
     @GetMapping("/review/{reviewId}")

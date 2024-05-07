@@ -2,6 +2,7 @@ package com.example.pixels.error;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.ForbiddenException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -91,7 +92,7 @@ public class RestResponseEntityExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Map<String, String>> handleNoSuchElementFoundException(NoSuchElementException exception) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("Input Error", exception.getMessage());
+        errors.put("Not Found", exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 
@@ -110,5 +111,31 @@ public class RestResponseEntityExceptionHandler
         errors.put("Forbidden",exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("Conflict",exception.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errors);
+    }
+
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("Not Acceptable",exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(errors);
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("Not Acceptable",exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(errors);
+    }
+
 
 }

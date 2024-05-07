@@ -4,10 +4,7 @@ import com.example.pixels.dto.IdOnlySerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
@@ -19,7 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
 @Entity
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class Review {
@@ -39,6 +37,8 @@ public class Review {
 
     private String userName;
 
+    private String saveName;
+
     private Long likesCount = 0L;
 
     private Long dislikesCount = 0L;
@@ -55,6 +55,7 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id")
     @JsonSerialize(using = IdOnlySerializer.class)
+//    @ToString.Exclude
     private Movie movie;
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

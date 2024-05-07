@@ -1,31 +1,29 @@
 package com.example.pixels.controller;
 
+import com.example.pixels.config.EmailService;
 import com.example.pixels.entity.User;
 import com.example.pixels.entity.VerificationToken;
 import com.example.pixels.event.RegistrationCompleteEvent;
+import com.example.pixels.model.CriticModel;
 import com.example.pixels.model.PasswordModel;
+import com.example.pixels.model.PaymentDetailsModel;
 import com.example.pixels.model.UserModel;
 import com.example.pixels.service.UserService;
-import io.micrometer.core.instrument.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.DataFormatException;
 
 @Slf4j
 @RestController
@@ -36,6 +34,9 @@ public class RegistrationController {
 
     @Autowired
     private ApplicationEventPublisher publisher;
+
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping("/user/details")
     public UserDetails getCurrentUserUsingAuthentication() {
@@ -53,13 +54,28 @@ public class RegistrationController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @RequestBody UserModel userModel, final HttpServletRequest request) throws IllegalAccessException {
+    public User registerUser(@Valid @RequestBody UserModel userModel, final HttpServletRequest request) throws IllegalAccessException, DataFormatException {
         if(! userModel.getPassword().equals(userModel.getMatchingPassword()))
-            return "Password not matched.";
+            throw new DataFormatException("Password not matched.");
         User user = userService.registerUser(userModel);
         publisher.publishEvent(new RegistrationCompleteEvent(user,
                 applicationUrl(request)));
-        return "Success";
+        return user;
+    }
+
+    @GetMapping("/allCritics")
+    public List<User> getAllCritics(){
+        return userService.getAllCritics();
+    }
+
+    @GetMapping("/allCriticsNames")
+    public List<String> getAllCriticNames(){
+        return userService.getAllCriticNames();
+    }
+
+    @PostMapping("/user/criticRequest")
+    public String criticRequest(@RequestBody CriticModel criticModel) throws IllegalAccessException {
+        return userService.criticRequest(criticModel);
     }
 
     @PutMapping("/user/{userId}")
@@ -72,14 +88,6 @@ public class RegistrationController {
     @DeleteMapping("/user/{userId}")
     public String deleteUserById(@PathVariable("userId") Long userId){
         return userService.deleteUserById(userId);
-    }
-
-    @PostMapping("/user/getPremiumSubscription/{months}")
-    public String getPremium(@PathVariable("months") Integer months){
-        Set<Integer> validMonths = Set.of(1, 3, 6, 12);
-        if(!validMonths.contains(months))
-            return "Please select available plan.";
-        return userService.getPremiumSubscription(months);
     }
 
     @GetMapping("/verifyRegistration")
@@ -106,7 +114,9 @@ public class RegistrationController {
     private void resendVerifyTokenMail(User user, String applicationUrl, VerificationToken verificationToken){
         String url = applicationUrl + "/verifyRegistration?token="+verificationToken.getToken();
 
-        log.info("Click the link to verify your account: {}", url);
+        emailService.sendSimpleMessage(user.getUserEmail(), "Please verify your account.","Thank you for creating an account with us," +
+                " Please verify your account by clicking below link:\n\n"+ url);
+//        log.info("Click the link to verify your account: {}", url);
     }
 
     @PostMapping("/resetPassword")
@@ -141,7 +151,9 @@ public class RegistrationController {
     private String passwordResetTokenMail(User user, String applicationUrl, String token) {
         String url = applicationUrl + "/savePassword?token="+token;
 
-        log.info("Click the link to Reset your password: {}", url);
+        emailService.sendSimpleMessage(user.getUserEmail(), "Reset your Password.","Click the below link to Reset your password:\n\n"+ url);
+
+//        log.info("Click the link to Reset your password: {}", url);
         return url;
     }
 

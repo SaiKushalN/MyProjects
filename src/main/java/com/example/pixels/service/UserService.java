@@ -2,10 +2,12 @@ package com.example.pixels.service;
 
 import com.example.pixels.entity.User;
 import com.example.pixels.entity.VerificationToken;
+import com.example.pixels.model.CriticModel;
 import com.example.pixels.model.UserModel;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -35,5 +37,13 @@ public interface UserService {
 
     User editUser(Long userId, UserModel userModel);
 
-    String getPremiumSubscription(Integer months);
+    String getPremiumSubscription(String planName, int discountRate);
+
+    String criticRequest(CriticModel criticModel);
+
+    User getLoggedInUser();
+
+    List<User> getAllCritics();
+
+    List<String> getAllCriticNames();
 }

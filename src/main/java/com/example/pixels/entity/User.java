@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.*;
 
@@ -17,7 +14,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -43,15 +41,14 @@ public class User {
     @JsonIgnore
     private String password;
 
-    private String fullName = firstName+" "+lastName;
+    private String fullName;
 
     private String userRole;
 
-    private String subscription = "Free";
-
-    private LocalDate subStartDate = null;
-
-    private LocalDate subEndDate = null;
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY
+            , cascade = CascadeType.ALL)
+    @JsonSerialize(using = IdOnlySerializer.class)
+    private PremiumUser premiumUser;
 
     private boolean userVerified = false;
 

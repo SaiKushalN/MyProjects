@@ -1,5 +1,6 @@
 package com.example.pixels.event.listener;
 
+import com.example.pixels.config.EmailService;
 import com.example.pixels.entity.User;
 import com.example.pixels.event.RegistrationCompleteEvent;
 import com.example.pixels.service.UserService;
@@ -18,6 +19,9 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public void onApplicationEvent(RegistrationCompleteEvent event) {
         User user = event.getUser();
@@ -28,6 +32,8 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         String url = event.getApplicationUrl() + "/verifyRegistration?token="+token;
 
         //sendverificationemail
-        log.info("Click the link to verify your account: {}", url);
+//        log.info("Click the link to verify your account: {}", url);
+        emailService.sendSimpleMessage(user.getUserEmail(), "Please verify your account.","Thank you for creating an account with us," +
+                " Please verify your account by clicking below link:\n\n"+ url);
     }
 }

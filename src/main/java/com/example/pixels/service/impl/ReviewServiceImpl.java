@@ -1,8 +1,9 @@
 package com.example.pixels.service.impl;
 
+import com.example.pixels.config.EmailService;
 import com.example.pixels.entity.*;
-import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.model.ReviewModel;
+import com.example.pixels.repository.ReviewAlertRepository;
 import com.example.pixels.repository.ReviewDislikeRepository;
 import com.example.pixels.repository.ReviewLikeRepository;
 import com.example.pixels.repository.ReviewRepository;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -38,8 +38,20 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Autowired
     MovieService movieService;
+
+    @Autowired
+    ReviewAlertRepository reviewAlertRepository;
+
+    @Autowired
+    EmailService emailService;
+
+
     @Override
-    public Review addReview(Movie movie, ReviewModel reviewModel, User user) {
+    public Review addReview(Long movieId, ReviewModel reviewModel, User user) {
+
+        if (reviewRepository.existsByUserNameAndMovieId(user.getUserEmail(), movieId)) {
+            throw new IllegalStateException("A review from this user for this movie already exists.");
+        }
 
         Review review = new Review();
         review.setRatingPoints(reviewModel.getRatingPoints());
@@ -48,17 +60,69 @@ public class ReviewServiceImpl implements ReviewService {
         review.setChildSafety(reviewModel.getChildSafety());
         review.setUserName(user.getUserEmail());
         review.setUser(user);
+        Movie movie = movieService.getMovieById(movieId);
         review.setMovie(movie);
-        review.setUserName(user.getFirstName()+" "+user.getLastName());
+        review.setSaveName(user.getFullName());
 
-        if (reviewRepository.existsByUserNameAndMovieId(user.getUserEmail(), movie.getId())) {
-            throw new IllegalStateException("A review from this user for this movie already exists.");
+        String userType = (user.getUserRole().contains("CRITIC"))?"CRITIC":"USER";
+
+        reviewRepository.save(review);
+        checkAndNotifyReviewAlerts(movie, userType, user, review);
+        sumOfRatings(movie.getId());
+        return review;
+
+    }
+
+    private void checkAndNotifyReviewAlerts(Movie movie, String userType, User user, Review review) {
+
+        List<ReviewAlert> alerts = (userType.equals("CRITIC"))?(reviewAlertRepository.findAlertsForCriticReview(movie.getId(),
+                user.getFullName(), user.getPremiumUser().getId()))
+                :(reviewAlertRepository.findAlertsForUserReview(movie.getId(),user.getPremiumUser().getId()));
+
+        if(alerts.isEmpty())
+            throw new NoSuchElementException("No alerts were present.");
+
+        for (ReviewAlert alert : alerts) {
+//            System.out.println("\n"+alert.getId()+"\n");
+            notifyUserOfReview(alert, movie, review);
         }
-        else {
-            reviewRepository.save(review);
-            sumOfRatings(movie.getId());
-            return review;
+    }
+
+    private void notifyUserOfReview(ReviewAlert alert, Movie movie, Review review) {
+
+        String subject = "";
+        String message = "";
+
+        switch (alert.getAlertType()) {
+            case "MOVIE":
+                subject = "New Review Alert for " + movie.getMovieName();
+                message = "A new review has been posted for the movie: " + movie.getMovieName()
+                        +"\nReview: "+review.getReviewDescription()
+                        +"\nGiven By: "+review.getUserName()
+                        +"\nMovie rating: "+movie.getMovieRating();
+                break;
+            case "MOVIEANYCRITIC":
+                subject = "New Critic Review Alert for " + movie.getMovieName();
+                message = "A new review by a critic has been posted for the movie: " + movie.getMovieName()
+                        +"\nReview: "+review.getReviewDescription()
+                        +"\nGiven By: "+review.getUserName()
+                        +"\nMovie rating: "+movie.getMovieRating();
+                break;
+            case "MOVIEANDNAME":
+                subject = "New Review Alert by " + review.getUserName();
+                message = "A new review by " + review.getUserName() + " has been posted for the movie: " + movie.getMovieName()
+                        +"\nReview: "+review.getReviewDescription()
+                        +"\nMovie rating: "+movie.getMovieRating();
+                break;
+            default:
+                subject = "Review Notification";
+                message = "A new review has been posted that may interest you.";
+                break;
         }
+
+        String email = alert.getPremiumUser().getUser().getUserEmail();
+
+        emailService.sendSimpleMessage(email, subject, message);
     }
 
     @Override
@@ -151,8 +215,10 @@ public class ReviewServiceImpl implements ReviewService {
         return "Review deleted successfully";
     }
 
+
     @Override
     public Review editReview(Long reviewId, ReviewModel reviewModel) {
+        //Change per add review
         Review review = getReviewById(reviewId);
         UserDetails userDetails = userService.getLoggedInUserDetails();
         if(!(review.getUserName()).equals(userDetails.getUsername()))

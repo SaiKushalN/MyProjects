@@ -7,10 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.validator.constraints.Range;
 import com.fasterxml.jackson.databind.JsonSerializer;
 
@@ -19,7 +16,8 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -46,8 +44,10 @@ public class Movie {
 
     private String movieImageUrl;
 
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL
+            , fetch = FetchType.LAZY)
     @JsonSerialize(contentUsing = IdOnlySerializer.class)
+//    @ToString.Exclude
     private List<Review> reviews;
 
 }

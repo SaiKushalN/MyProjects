@@ -50,6 +50,11 @@ public class MovieController {
     @GetMapping("/movies/movieRating/{movieRating}")
     public List<Movie> getMoviesByMovieRating(@PathVariable("movieRating") Double movieRating) {return movieService.getMoviesByMovieRating(movieRating);}
 
+    @GetMapping("/movies/getMovieById/{movieId}")
+    public Movie getMovieById(@PathVariable("movieId") Long movieId){
+        return movieService.getMovieById(movieId);
+    }
+
     //ERROR
     @PostMapping("/admin/addMovie")
     public ResponseEntity<Object> saveMovie(@Valid @RequestBody MovieModel movieModel) {

@@ -33,6 +33,12 @@ public class IdOnlySerializer extends JsonSerializer<Object> {
         else if(value instanceof CommentDislike){
             gen.writeNumber(((CommentDislike) value).getId());
         }
+        else if(value instanceof PremiumUser){
+            gen.writeNumber(((PremiumUser) value).getId());
+        }
+        else if(value instanceof ReviewAlert){
+            gen.writeNumber(((ReviewAlert) value).getId());
+        }
         else {
             gen.writeNull();
         }

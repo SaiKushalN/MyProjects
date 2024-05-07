@@ -1,14 +1,12 @@
 package com.example.pixels.dto;
 
+import com.example.pixels.entity.Review;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ReviewDTO {
-    private Double userRating;
-    private String reviewDescription;
-    private Boolean suggest;
-    private String childSafety;
-    private String userName;
-
-    private boolean userVerified;
-    private String movieName;
-
-    private double overallRating;
+    private Review review;
+    private String premiumUser;
 }

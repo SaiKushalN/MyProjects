@@ -1,19 +1,15 @@
 package com.example.pixels.service;
 
-import com.example.pixels.entity.Movie;
 import com.example.pixels.entity.Review;
 import com.example.pixels.entity.User;
-import com.example.pixels.error.ItemNotFoundException;
 import com.example.pixels.model.ReviewModel;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public interface ReviewService {
-    Review addReview(Movie movie, ReviewModel reviewModel, User user);
+    Review addReview(Long movieId, ReviewModel reviewModel, User user);
 
     Review getReviewById(Long reviewId);
 
