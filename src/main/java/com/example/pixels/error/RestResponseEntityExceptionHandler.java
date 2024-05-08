@@ -18,6 +18,7 @@ import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.zip.DataFormatException;
 
 @ControllerAdvice
 @ResponseStatus
@@ -132,6 +133,14 @@ public class RestResponseEntityExceptionHandler
     @ExceptionHandler(NullPointerException.class)
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("Not Acceptable",exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(errors);
+    }
+
+    @ExceptionHandler(DataFormatException.class)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    public ResponseEntity<Map<String, String>> handleDataFormatException(DataFormatException exception) {
         Map<String, String> errors = new HashMap<>();
         errors.put("Not Acceptable",exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(errors);

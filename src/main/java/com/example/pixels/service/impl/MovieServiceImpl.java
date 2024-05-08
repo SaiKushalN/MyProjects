@@ -11,6 +11,7 @@ import com.example.pixels.service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -26,12 +27,12 @@ public class MovieServiceImpl implements MovieService {
     //TestWritten
     @Override
     public List<Movie> getAllMovies() {
-        Optional<List<Movie>> movies = Optional.of(movieRepository.findAll());
-        if(movies.get().isEmpty()){
+        List<Movie> movies = movieRepository.findAll();
+        if(movies.isEmpty()){
             throw new NoSuchElementException("No Movies Available.");
         }
 //        movies.get().forEach(movie -> {reviewService.sumOfRatings(movie.getId());});
-        return movies.get();
+        return movies;
     }
 
     @Override
@@ -46,8 +47,7 @@ public class MovieServiceImpl implements MovieService {
     //TestWritten
     @Override
     public Movie getMovieByName(String movieName) {
-        Optional<Movie> movie = Optional.ofNullable(movieRepository.findByMovieNameIgnoreCase(movieName));
-
+        Optional<Movie> movie = movieRepository.findByMovieNameIgnoreCase(movieName);
         if(movie.isEmpty()){
             throw new NoSuchElementException("Movie with name "+ movieName+" Not Available.");
         }
@@ -57,8 +57,8 @@ public class MovieServiceImpl implements MovieService {
     //TestWritten
     @Override
     public List<Movie> getMoviesByGenre(String movieGenre) {
-        Optional<List<Movie>> movies = Optional.of(movieRepository.findAllByMovieGenreIgnoreCaseOrderByMovieName(movieGenre));
-        if(movies.get().isEmpty()){
+        Optional<List<Movie>> movies = movieRepository.findAllByMovieGenreIgnoreCaseOrderByMovieName(movieGenre);
+        if(movies.isEmpty()){
             throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
@@ -67,8 +67,8 @@ public class MovieServiceImpl implements MovieService {
     //TestWritten
     @Override
     public List<Movie> getMoviesByReleaseDate(LocalDate releaseDate) {
-        Optional<List<Movie>> movies = Optional.of(movieRepository.findAllByReleaseDateOrderByMovieName(releaseDate));
-        if(movies.get().isEmpty()){
+        Optional<List<Movie>> movies = movieRepository.findAllByReleaseDateOrderByMovieName(releaseDate);
+        if(movies.isEmpty()){
             throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
@@ -79,8 +79,8 @@ public class MovieServiceImpl implements MovieService {
     public List<Movie> getMoviesByMovieRating(Double movieRating) {
         int lowerRating = movieRating.intValue();
         int upperRating = lowerRating + 1;
-        Optional<List<Movie>> movies = Optional.of(movieRepository.findByMovieRatingBetweenOrderByMovieName(lowerRating, upperRating));
-        if(movies.get().isEmpty()){
+        Optional<List<Movie>> movies = movieRepository.findByMovieRatingBetweenOrderByMovieName(lowerRating, upperRating);
+        if(movies.isEmpty()){
             throw new NoSuchElementException("No Movies Available.");
         }
         return movies.get();
@@ -88,6 +88,10 @@ public class MovieServiceImpl implements MovieService {
 
     @Override
     public Movie saveMovie(MovieModel movieModel)  {
+
+        Optional<Movie> movieFromDb = movieRepository.findByMovieNameIgnoreCase(movieModel.getMovieName());
+        if(movieFromDb.isPresent())
+            throw new DataIntegrityViolationException("Movie already exists.");
 
         Movie movie = new Movie();
         movie.setMovieName(movieModel.getMovieName());

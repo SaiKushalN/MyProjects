@@ -35,10 +35,10 @@ public interface ReviewAlertRepository extends JpaRepository<ReviewAlert, Long> 
 
     //For critic review
     @Query("SELECT ra FROM ReviewAlert ra WHERE (ra.movie.id =:movieId) AND (ra.alertType = 'MOVIE' " +
-            "OR ra.alertType = 'MOVIEANYCRITIC' OR (ra.alertType = 'MOVIEANDNAME' AND ra.criticName = :criticName) ) AND (ra.premiumUser.id != :premiumUserId)")
-    List<ReviewAlert> findAlertsForCriticReview(@Param("movieId") Long movieId, @Param("criticName") String criticName, @Param("premiumUserId") Long premiumUserId);
+            "OR ra.alertType = 'MOVIEANYCRITIC' OR (ra.alertType = 'MOVIEANDNAME' AND ra.criticName = :criticName) ) AND (ra.premiumUser.user.id != :userId)")
+    List<ReviewAlert> findAlertsForCriticReview(@Param("movieId") Long movieId, @Param("criticName") String criticName, @Param("userId") Long userId);
 
-    @Query("SELECT ra FROM ReviewAlert ra WHERE ra.movie.id = :movieId AND ra.alertType = 'MOVIE' AND ra.premiumUser != :premiumUserId")
-    List<ReviewAlert> findAlertsForUserReview(@Param("movieId") Long movieId, @Param("premiumUserId") Long premiumUserId);
+    @Query("SELECT ra FROM ReviewAlert ra WHERE ra.movie.id = :movieId AND ra.alertType = 'MOVIE' AND ra.premiumUser.user.id != :userId")
+    List<ReviewAlert> findAlertsForUserReview(@Param("movieId") Long movieId, @Param("userId") Long userId);
 
 }

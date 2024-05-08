@@ -8,14 +8,15 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    public Movie findByMovieNameIgnoreCase(String movieName);
+    public Optional<Movie> findByMovieNameIgnoreCase(String movieName);
 
-    List<Movie> findAllByMovieGenreIgnoreCaseOrderByMovieName(String movieGenre);
+    Optional<List<Movie>> findAllByMovieGenreIgnoreCaseOrderByMovieName(String movieGenre);
 
-    List<Movie> findAllByReleaseDateOrderByMovieName(LocalDate releaseDate);
+    Optional<List<Movie>> findAllByReleaseDateOrderByMovieName(LocalDate releaseDate);
 
-    List<Movie> findByMovieRatingBetweenOrderByMovieName(int lowerRating, int upperRating);
+    Optional<List<Movie>> findByMovieRatingBetweenOrderByMovieName(int lowerRating, int upperRating);
 }

@@ -76,14 +76,13 @@ public class ReviewServiceImpl implements ReviewService {
     private void checkAndNotifyReviewAlerts(Movie movie, String userType, User user, Review review) {
 
         List<ReviewAlert> alerts = (userType.equals("CRITIC"))?(reviewAlertRepository.findAlertsForCriticReview(movie.getId(),
-                user.getFullName(), user.getPremiumUser().getId()))
-                :(reviewAlertRepository.findAlertsForUserReview(movie.getId(),user.getPremiumUser().getId()));
+                user.getFullName(), user.getId()))
+                :(reviewAlertRepository.findAlertsForUserReview(movie.getId(),user.getId()));
 
-        if(alerts.isEmpty())
-            throw new NoSuchElementException("No alerts were present.");
+//        if(alerts.isEmpty())
+//            throw new NoSuchElementException("No alerts were present.");
 
         for (ReviewAlert alert : alerts) {
-//            System.out.println("\n"+alert.getId()+"\n");
             notifyUserOfReview(alert, movie, review);
         }
     }
@@ -98,19 +97,19 @@ public class ReviewServiceImpl implements ReviewService {
                 subject = "New Review Alert for " + movie.getMovieName();
                 message = "A new review has been posted for the movie: " + movie.getMovieName()
                         +"\nReview: "+review.getReviewDescription()
-                        +"\nGiven By: "+review.getUserName()
+                        +"\nGiven By: "+review.getSaveName()
                         +"\nMovie rating: "+movie.getMovieRating();
                 break;
             case "MOVIEANYCRITIC":
                 subject = "New Critic Review Alert for " + movie.getMovieName();
                 message = "A new review by a critic has been posted for the movie: " + movie.getMovieName()
                         +"\nReview: "+review.getReviewDescription()
-                        +"\nGiven By: "+review.getUserName()
+                        +"\nGiven By: "+review.getSaveName()
                         +"\nMovie rating: "+movie.getMovieRating();
                 break;
             case "MOVIEANDNAME":
-                subject = "New Review Alert by " + review.getUserName();
-                message = "A new review by " + review.getUserName() + " has been posted for the movie: " + movie.getMovieName()
+                subject = "New Review Alert by " + review.getSaveName();
+                message = "A new review by " + review.getSaveName() + " has been posted for the movie: " + movie.getMovieName()
                         +"\nReview: "+review.getReviewDescription()
                         +"\nMovie rating: "+movie.getMovieRating();
                 break;
@@ -147,7 +146,8 @@ public class ReviewServiceImpl implements ReviewService {
                 .mapToDouble(Review::getRatingPoints)
                 .average();
         if (averageRating.isPresent()) {
-            movie.setMovieRating(averageRating.getAsDouble());
+            double roundedAverage = Math.round(averageRating.getAsDouble() * 100.0) / 100.0;
+            movie.setMovieRating(roundedAverage);
             movieService.saveMovieEntity(movie);
         }
     }
@@ -238,7 +238,7 @@ public class ReviewServiceImpl implements ReviewService {
     public List<Review> myReviews(User user) {
         Optional<List<Review>> reviews = reviewRepository.findAllByUserName(user.getUserEmail());
         if(reviews.isEmpty())
-            throw new NoSuchElementException("You have no Reviews");
+            throw new NoSuchElementException("You have no Reviews.");
         return reviews.get();
     }
 }

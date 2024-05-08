@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
         user.setUserEmail(userModel.getUserEmail());
         user.setFirstName(capitalizeName(userModel.getFirstName()));
         user.setLastName(capitalizeName(userModel.getLastName()));
-        user.setFullName(userModel.getFirstName() +" "+ userModel.getLastName());
+        user.setFullName(user.getFirstName() +" "+ user.getLastName());
         user.setUserRole("USER");
         user.setPassword(passwordEncoder.encode(userModel.getPassword()));
 
@@ -322,6 +322,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changePassword(User user, String newPassword) {
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }

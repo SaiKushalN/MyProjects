@@ -29,7 +29,6 @@ import java.util.zip.DataFormatException;
 @RestController
 public class RegistrationController {
 
-
     @Autowired
     private UserService userService;
 
@@ -134,13 +133,15 @@ public class RegistrationController {
     }
 
     @PostMapping("/savePassword")
-    public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel ) {
+    public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel ) throws DataFormatException {
         String result = userService.validatePasswordResetToken(token);
         if(!result.equalsIgnoreCase("valid")) {
             return "Invalid token";
         }
         Optional<User> user = userService.getUserByPasswordResetToken(token);
         if(user.isPresent()){
+            if(!(passwordModel.getNewPassword()).equals(passwordModel.getMatchPassword()))
+                throw new DataFormatException("Password does not match.");
             userService.changePassword(user.get(), passwordModel.getNewPassword());
             return "Password reset successfully.";
         }
